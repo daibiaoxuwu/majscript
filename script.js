@@ -278,11 +278,12 @@ if (game) {
     try {
 	  var tmp = view.DesktopMgr.prototype.DoMJAction;
 	  view.DesktopMgr.prototype.DoMJAction = function(t, e) {
+		  
           inject_func(t, e);
 		  
 		  tmp.apply(this, [t, e]);
 	  }
-         
+	  
 	  uiscript.UI_GameEnd.prototype.onEnable = function() {
 		  setTimeout(function ASDNqFA_bq2() {
 			  if (uiscript.UI_GameEnd.Inst.enable) {
@@ -302,7 +303,7 @@ if (game) {
 				  setTimeout(ASDNqFA_bq2, 10000);
 			  }
 		  }, 10000);
-	  };/*
+	  };
 	  var tmp2 = uiscript.UI_Lobby.prototype.onEnable;
 	  uiscript.UI_Lobby.prototype.onEnable = function() {
 		  setTimeout(function() {
@@ -317,7 +318,7 @@ if (game) {
 			  }, 2500);
 		  }, 3000);
 		  tmp2.apply(this, []);
-	  }*/
+	  }
 	  
 	  
     } catch (error) {
