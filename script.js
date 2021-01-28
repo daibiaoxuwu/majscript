@@ -42,7 +42,7 @@ if (game) {
 	  // Ajax here (process Liqi, Zimo here)
 	  last_self_deal = true;
 	  
-	  if (r.operation.operation_list && r.operation.operation_list.length > 0) {
+	  if (r.operation && r.operation.operation_list && r.operation.operation_list.length > 0) {
 		  
 		  
 		  var hasLiqi = false;
@@ -190,7 +190,7 @@ if (game) {
 	  nowDoraNum = 1;
 	  isLiqi = false;
 	  if (r.tiles.length == 14) {
-		setTimeout(()=>doDiscard(r),500);
+		setTimeout(()=>doDiscard(r),3000);
 	  }
     }
 	else if (t.name == "ActionDiscardTile") {
@@ -278,11 +278,12 @@ if (game) {
     try {
 	  var tmp = view.DesktopMgr.prototype.DoMJAction;
 	  view.DesktopMgr.prototype.DoMJAction = function(t, e) {
+		  
           inject_func(t, e);
 		  
 		  tmp.apply(this, [t, e]);
 	  }
-         
+	  
 	  uiscript.UI_GameEnd.prototype.onEnable = function() {
 		  setTimeout(function ASDNqFA_bq2() {
 			  if (uiscript.UI_GameEnd.Inst.enable) {
@@ -302,7 +303,8 @@ if (game) {
 				  setTimeout(ASDNqFA_bq2, 10000);
 			  }
 		  }, 10000);
-	  };/*
+	  };
+        /*
 	  var tmp2 = uiscript.UI_Lobby.prototype.onEnable;
 	  uiscript.UI_Lobby.prototype.onEnable = function() {
 		  setTimeout(function() {
@@ -311,13 +313,30 @@ if (game) {
 				  //uiscript.UI_Lobby.Inst.page_rank.content0._childs[0]._childs[0]._childs[0]._childs[0].clickHandler.run();	// tong zhi jian
 				  uiscript.UI_Lobby.Inst.page_rank.content0._childs[0]._childs[1]._childs[0]._childs[0].clickHandler.run(); // yin zhi jian
 				  setTimeout(function() {
-					  //uiscript.UI_Lobby.Inst.page_east_north.btns[0]._childs[0].clickHandler.run();	// si ren dong
-					  uiscript.UI_Lobby.Inst.page_east_north.btns[1]._childs[0].clickHandler.run();		// si ren nan
+					  uiscript.UI_Lobby.Inst.page_east_north.btns[0]._childs[0].clickHandler.run();	// si ren dong
+					  //uiscript.UI_Lobby.Inst.page_east_north.btns[1]._childs[0].clickHandler.run();		// si ren nan
 				  }, 2500);
 			  }, 2500);
 		  }, 3000);
 		  tmp2.apply(this, []);
-	  }*/
+	  }
+        
+         */
+      
+         var tmp2 = uiscript.UI_Lobby.prototype.onEnable;
+	  uiscript.UI_Lobby.prototype.onEnable = function() {
+		  setTimeout(function() {
+			  uiscript.UI_Lobby.Inst.page0.btn_dajiangsai.clickHandler.run();
+			  setTimeout(function() {
+                  uiscript.UI_Lobby.Inst.page_match.onClickAt(2);
+				  setTimeout(function() {
+                      uiscript.UI_Lobby.Inst.page_east_north.btns[0]._childs[0].clickHandler.run();
+				  }, 2500);
+			  }, 2500);
+		  }, 3000);
+		  tmp2.apply(this, []);
+	  }
+      
 	  
 	  
     } catch (error) {
