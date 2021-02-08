@@ -2,6 +2,7 @@
 if (game) {
 	
   var myhai = [];
+  var dora = [];
   var rest = [];
   var last_self_deal = false;
   var nowDoraNum = 0;
@@ -128,10 +129,12 @@ if (game) {
 					  GameMgr.Inst.clientHeatBeat();
 				  }
 			  };
+
 			  xhr.send(JSON.stringify({
 				  "hai": myhai,
 				  "rest": rest,
-				  "left": r.left_tile_count
+				  "left": r.left_tile_count,
+                  "dora": dora
 			  }));
 		  }
 		  
@@ -155,8 +158,9 @@ if (game) {
 		  rest.push(4);
 		  myhai.push(0);
 	  }
-	  for (var i = 0; i < r.doras.length; ++ i) {
-		  rest[hai2id(r.doras[i])] -= 1;
+	  for (nowDoraNum = 0; nowDoraNum  < r.doras.length; ++ nowDoraNum) {
+		  rest[hai2id(r.doras[nowDoraNum])] -= 1;
+          dora[nowDoraNum] = r.doras[nowDoraNum];
 	  }
 	  for (var i = 0; i < r.tiles.length; ++ i) {
 		  var tid = hai2id(r.tiles[i]);
@@ -164,7 +168,6 @@ if (game) {
 		  myhai[tid] += 1;
 	  }
 	  last_self_deal = false;
-	  nowDoraNum = 1;
 	  isLiqi = false;
 	  if (r.tiles.length == 14) {
 		doDiscard(r);
@@ -202,6 +205,7 @@ if (game) {
 	  if (r.doras && r.doras.length == nowDoraNum + 1) { // new Dora
 		  var tid = hai2id(r.doras[r.doras.length - 1]);
 		  rest[tid] -= 1;
+          dora[nowDoraNum] = r.doras[r.doras.length - 1];
 		  nowDoraNum += 1;
 	  }
 	}
@@ -216,6 +220,7 @@ if (game) {
 	  if (r.doras && r.doras.length == nowDoraNum + 1) { // new Dora
 		  var tid = hai2id(r.doras[r.doras.length - 1]);
 		  rest[tid] -= 1;
+          dora[nowDoraNum] = r.doras[r.doras.length - 1];
 		  nowDoraNum += 1;
 	  }
 	}
