@@ -2,20 +2,12 @@
 if (game) {
 	
   var myhai = [];
-  var rest = [];
   var dora = [];
+  var rest = [];
   var last_self_deal = false;
   var nowDoraNum = 0;
   var isLiqi = false;
   
-  var hai2nxtid = function(hname) {
-      var tmp = hai2id(hname);
-      if (tmp == 8 || tmp == 17 || tmp == 26) return (tmp - 9);
-      if (tmp == 30) return 26;
-      if (tmp == 33) return 31;
-	  return (tmp + 1);
-  }
-
   var hai2id = function(hname) {
 	  var base = 0;
 	  if (hname[1] == "m") base = 0;
@@ -103,7 +95,6 @@ if (game) {
 					  var handid = 0;
 					  var found = false;
 					  var d_isdora = true;
-                      //console.log(view.ViewPlayer_Me.Inst.hand.length);
 					  for (var i = 0; i < view.ViewPlayer_Me.Inst.hand.length; ++ i) {
 						  if (  maj2id(view.ViewPlayer_Me.Inst.hand[i]) == did ) {
 							  if (d_isdora) {
@@ -138,13 +129,7 @@ if (game) {
 					  GameMgr.Inst.clientHeatBeat();
 				  }
 			  };
-//              console.log(r.tile);
-  //            console.log(view.ViewPlayer_Me.Inst.hand.length);
-              if(view.ViewPlayer_Me.Inst.hand.length==14){
-                  for(var i=0;i<34;++i) dora[i]=0;
-                  for(var i=0;i<view.ViewPlayer_Me.Inst.hand.length;++i)
-                      if(view.ViewPlayer_Me.Inst.hand[i].isDora)dora[maj2id(view.ViewPlayer_Me.Inst.hand[i])]+=1;
-              }
+
 			  xhr.send(JSON.stringify({
 				  "hai": myhai,
 				  "rest": rest,
@@ -169,28 +154,23 @@ if (game) {
 	if (t.name == "ActionNewRound") {
 	  rest = [];
 	  myhai = [];
-	  dora = [];
 	  for (var i = 0; i < 34; ++ i) {
 		  rest.push(4);
 		  myhai.push(0);
-		  dora.push(0);
 	  }
-	  for (var i = 0; i < r.doras.length; ++ i) {
-		  rest[hai2id(r.doras[i])] -= 1;
+	  for (nowDoraNum = 0; nowDoraNum  < r.doras.length; ++ nowDoraNum) {
+		  rest[hai2id(r.doras[nowDoraNum])] -= 1;
+          dora[nowDoraNum] = r.doras[nowDoraNum];
 	  }
 	  for (var i = 0; i < r.tiles.length; ++ i) {
 		  var tid = hai2id(r.tiles[i]);
 		  rest[tid] -= 1;
 		  myhai[tid] += 1;
-          for (var j = 0; j < r.doras.length; ++ j) {
-              if(tid==hai2nxtid(r.doras[j])) dora[tid] += 1;
-          }
 	  }
 	  last_self_deal = false;
-	  nowDoraNum = 1;
 	  isLiqi = false;
 	  if (r.tiles.length == 14) {
-		setTimeout(()=>doDiscard(r),500);
+		doDiscard(r);
 	  }
     }
 	else if (t.name == "ActionDiscardTile") {
@@ -225,6 +205,7 @@ if (game) {
 	  if (r.doras && r.doras.length == nowDoraNum + 1) { // new Dora
 		  var tid = hai2id(r.doras[r.doras.length - 1]);
 		  rest[tid] -= 1;
+          dora[nowDoraNum] = r.doras[r.doras.length - 1];
 		  nowDoraNum += 1;
 	  }
 	}
@@ -233,12 +214,13 @@ if (game) {
 		  var tid = hai2id(r.tile);
 		  myhai[tid] += 1;
 		  rest[tid] -= 1;
-		  setTimeout(()=>doDiscard(r),500);
+		  doDiscard(r);
 	  }
 	  
 	  if (r.doras && r.doras.length == nowDoraNum + 1) { // new Dora
 		  var tid = hai2id(r.doras[r.doras.length - 1]);
 		  rest[tid] -= 1;
+          dora[nowDoraNum] = r.doras[r.doras.length - 1];
 		  nowDoraNum += 1;
 	  }
 	}
@@ -279,7 +261,7 @@ if (game) {
 	  var tmp = view.DesktopMgr.prototype.DoMJAction;
 	  view.DesktopMgr.prototype.DoMJAction = function(t, e) {
 		  
-          inject_func(t, e);
+		  inject_func(t, e);
 		  
 		  tmp.apply(this, [t, e]);
 	  }
@@ -304,15 +286,16 @@ if (game) {
 			  }
 		  }, 10000);
 	  };
+	  
 	  var tmp2 = uiscript.UI_Lobby.prototype.onEnable;
 	  uiscript.UI_Lobby.prototype.onEnable = function() {
 		  setTimeout(function() {
 			  uiscript.UI_Lobby.Inst.page0.btn_yibanchang.clickHandler.run();
 			  setTimeout(function() {
-				  //uiscript.UI_Lobby.Inst.page_rank.content0._childs[0]._childs[0]._childs[0]._childs[0].clickHandler.run();	// tong zhi jian
+				  // uiscript.UI_Lobby.Inst.page_rank.content0._childs[0]._childs[0]._childs[0]._childs[0].clickHandler.run();	// tong zhi jian
 				  uiscript.UI_Lobby.Inst.page_rank.content0._childs[0]._childs[1]._childs[0]._childs[0].clickHandler.run(); // yin zhi jian
 				  setTimeout(function() {
-					  //uiscript.UI_Lobby.Inst.page_east_north.btns[0]._childs[0].clickHandler.run();	// si ren dong
+					  // uiscript.UI_Lobby.Inst.page_east_north.btns[0]._childs[0].clickHandler.run();	// si ren dong
 					  uiscript.UI_Lobby.Inst.page_east_north.btns[1]._childs[0].clickHandler.run();		// si ren nan
 				  }, 2500);
 			  }, 2500);
@@ -324,4 +307,5 @@ if (game) {
     } catch (error) {
       requestAnimationFrame(autoRun)
     }
-  })}
+  })
+}
