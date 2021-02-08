@@ -159,6 +159,79 @@ int decide(const int *_hand_cnts, const int *known_remain_cnt, const int *dora, 
     }
     return best_card;
 }
+/*
+    if(round <= 10 || (close_to_hu_min < 3 && round <= 15)) {
+        double max_exp = -100, suc = 0;
+        double max_exp_s = -100, suc_s = 0;
+        int best_card = 0;
+        int best_card_s = 0;
+        for (int p = 1; p < branch_choice_num; ++p) {
+            int card = hand_choices[p - 1];
+            if (expectance[p] > max_exp) max_exp = expectance[p], best_card = card, suc = success[p];
+            if (hand_cnts[card] + known_remain_cnt[card] >= 4) continue;
+            if (expectance[p] > max_exp_s) max_exp_s = expectance[p], best_card_s = card, suc_s = success[p];
+        }
+        if(max_exp != max_exp_s){
+            printf("danger:%3s, %lf, %lf, %d\n",mname[best_card], max_exp, suc, close_to_hu[best_card]);
+            printf("safe:%3s, %lf, %lf, %d diff:%lf\n",mname[best_card_s], max_exp_s, suc, close_to_hu[best_card_s],max_exp - max_exp_s);
+        }
+        if(max_exp == max_exp_s) best_card = best_card_s;
+
+        if(round <= 6 || (round <= 12 && close_to_hu_min <= 2)) printf("brute");
+        else {
+            if(close_to_hu[best_card_s] > close_to_hu[best_card])
+                printf("regardless");
+            else {
+                printf("careful");
+                if (max_exp_s > 0 && max_exp_s > max_exp - 0.05 && max_exp_s != max_exp) {
+                    printf(":safer:%lf %lf:", max_exp, max_exp_s);
+                    max_exp = max_exp_s, suc = suc_s, best_card = best_card_s;
+                }
+            }
+        }
+        printf(":%lf, %lf, %d\n",max_exp, suc, close_to_hu_min);
+        if(round <= 8 || suc > 0.05) return best_card;
+    }
+    if(true) {
+        //safe: never play new cards; fastest hu; stop playing when possibility too low
+        double max_suc= -100, exp = 0;
+        double max_suc_s = -100, exp_s = 0;
+        int best_card = 0;
+        int best_card_s = -1;
+        for (int p = 1; p < branch_choice_num; ++p) {
+            int card = hand_choices[p - 1];
+            if (success[p] > max_suc) max_suc = success[p], best_card = card, exp = success[p];
+            if (hand_cnts[card] + known_remain_cnt[card] >= 4) continue;
+            if (success[p] > max_suc_s) max_suc_s = success[p], best_card_s = card, exp_s = success[p];
+        }
+        if(max_suc != max_suc_s){
+            printf("danger:%3s, %lf, %lf, %d\n",mname[best_card], max_suc, exp, close_to_hu[best_card]);
+            printf("safe:%3s, %lf, %lf, %d diff:%lf\n",mname[best_card_s], max_suc_s, exp_s, close_to_hu[best_card_s],max_suc - max_suc_s);
+        }
+        if(max_suc == max_suc_s) best_card = best_card_s;
+        if(max_suc_s > 0 && max_suc_s > max_suc - 0.05 && max_suc_s != max_suc){
+            printf("safer:%lf %lf\n",max_suc,max_suc_s);
+            best_card = best_card_s, max_suc = max_suc_s, exp = exp_s;
+        }
+        if(max_suc > 0.05) {
+            //continue playing cards
+            printf("careful-fast:%lf, %lf, %d\n",max_suc,exp, close_to_hu);
+            return best_card;
+        }
+        else {
+            //stop playing
+            int min_cnt = 5, hand_cnt = 0;
+            for (int p = 1; p < branch_choice_num; ++p) {
+                int card = hand_choices[p - 1];
+                int cnt = hand_cnts[card] + known_remain_cnt[card];
+                if(cnt < min_cnt || (cnt == min_cnt && hand_cnts[card] >= hand_cnt)) min_cnt = cnt, best_card = card, hand_cnt = hand_cnts[card];
+            }
+            printf("suc<0.05 playsafe:%lf, %lf, %d\n",max_suc,exp, close_to_hu);
+            return best_card;
+        }
+    }
+}
+ */
 int main() {
     fact[0] = 1;
     for (int i = 1; i <= 136; ++i) fact[i] = fact[i - 1] * i;
