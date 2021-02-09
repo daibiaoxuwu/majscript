@@ -15,9 +15,19 @@ def api():
     for i in range(34):
         f.write("%d " % data["rest"][i])
     f.write("\n")
+    for i in range(len(data["dora"])):
+        f.write("%d " % data["dora"][i])
+    f.write("\n")
     f.close()
     os.system("cppdp.exe")
-
+    '''
+    f = open("input.txt", "r")
+    print(f.read())
+    print(f.read())
+    print(f.read())
+    print(f.read())
+    f.close()
+    '''
     f = open("output.txt", "r")
     did = int(f.read())
     f.close()

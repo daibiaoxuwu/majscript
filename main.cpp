@@ -22,7 +22,7 @@ double fact[136];
 
 Hu_Automation HA;
 
-int decide(const int *_hand_cnts, const int *known_remain_cnt, const int *dora, int round) {
+int decide(const int *_hand_cnts, const int *known_remain_cnt, int round) {
     int hand_cnts[35];
     memcpy(hand_cnts, _hand_cnts, 35 * sizeof(int));
 
@@ -91,72 +91,63 @@ int decide(const int *_hand_cnts, const int *known_remain_cnt, const int *dora, 
 //            printf("\n");
 //        }
     }
-    //+debug
-    for (int p = 0; p < branch_choice_num; ++p) {
-        fprintf(flog, "\n%3s,%d", p == 0 ? "   " : mname[hand_choices[p - 1]], hand_cnts[hand_choices[p - 1]]);
-        for (int j = 1; j <= Hu_Automation::max_hu_value; ++j) {
-            fprintf(flog, "\n f[%d],", j);
-            for (int i = 1; i <= 13; ++i) {
-                fprintf(flog, "%llu,", f[p][34 & 1][i][j]);
-            }
-        }
-    }
-    //-debug
-
-    double expectance[43] = {}, success[43] = {};
-    int close_to_hu[43] = {};
-    int close_to_hu_min = 100;
-    for (int p = 1; p < branch_choice_num; ++p) {
-        int card = hand_choices[p - 1];
-        for (int nw = 34 & 1, i = 1; i <= 13; ++i) {
-            //dora penalty
-            int dora_count = 0, dora_penalty = 0;
-            for (int j = 0; j < 34; ++j) { dora_count += dora[i]; }
-            if (dora[card] >= hand_cnts[card]) dora_penalty = 1;
-
-            //possibility of lasting to this round
-            double prob =
-                    (round_prob[min(i - 1 + round, 18)] - round_prob[min(i + round, 18)]) / round_prob[min(round, 18)];
-
-            //expectance
-            unsigned long long sum = 0, sum2 = 0;
-            for (int j = 1; j <= Hu_Automation::max_hu_value; ++j) {
-                sum += f[p][nw][i][j] * (j + 4 + (dora_count - dora_penalty) * 1);//dora value?
-                sum2 += f[p][nw][i][j];
-                if(j==1) sum/=2, sum2/=2;
-            }
-
-            if (sum > 0 && close_to_hu[card] == 0) close_to_hu[card] = i;
-            if (sum > 0) close_to_hu_min = min(close_to_hu_min, i);
-            expectance[p] += (sum * fact[i] * fact[remaining_cards - i] / fact[remaining_cards]) * prob;
-            success[p] += (sum2 * fact[i] * fact[remaining_cards - i] / fact[remaining_cards]) * prob;
-        }
-        fprintf(flog, "%d %lf %lf\n", p, expectance[p], success[p]);
-    }
+    double temps[17];
+    double temps2[17];
+    unsigned long long temps3[17];
+    unsigned long long temps4[17];
 
 
-    //find best
-    assert(choice_num == branch_choice_num - 1);
-
-    double max_exp = -100, suc = 0;
     int best_card = 0;
-    int max_card_cnt = 0;
-    for (int p = 1; p < branch_choice_num; ++p) {
-        int card = hand_choices[p - 1];
-        int card_cnt = 4 - (known_remain_cnt[card] + hand_cnts[card]);//cards on table
-        if (expectance[p] > max_exp || (expectance[p] > max_exp-0.01 && card_cnt > max_card_cnt))
-            max_exp = expectance[p], best_card = card, suc = success[p], max_card_cnt = card_cnt;
-    }
-    printf("%lf %lf %d ",max_exp,suc,close_to_hu[best_card]);
-    if(suc < 0.01){
-        printf("safe: ");
-        int min_cnt = 5, hand_cnt = 0;
-        for (int p = 1; p < branch_choice_num; ++p) {
-            int card = hand_choices[p - 1];
-            int cnt = hand_cnts[card] + known_remain_cnt[card];
-            if(cnt < min_cnt || (cnt == min_cnt && hand_cnts[card] >= hand_cnt)) min_cnt = cnt, best_card = card, hand_cnt = hand_cnts[card];
+    double best_expectance = 1e-9;
+
+    int close_to_hu = 100;
+    for (int p = 0; p < branch_choice_num; ++p) {
+        fprintf(flog,"%3s,", p==0?"   ":mname[hand_choices[p-1]]);
+        double last_possibility = 0;
+        double fail_possibility = 0;
+        for (int nw = 34 & 1, i = 1; i <= 13; ++i) {
+            unsigned long long ans = 0;
+            for (int j = 1; j <= HA.tot; ++j)  ans += f[p][nw][i][j];
+            unsigned long long ans2 = 0;
+            for (int j = 1; j <= Hu_Automation::max_hu_value; ++j)  ans2 += f[p][nw][i][j] * (j+4);
+            double sum = ans2 * fact[i] * fact[remaining_cards - i] / fact[remaining_cards];//not hu at this round,from i=1:~1(tianhu) to i=18:liuju
+            //a possibility including the next one
+            fprintf(flog,"%llu,", ans2);//long long:+-9e18
+            temps3[i] =  ans + f[p][nw][i][0];
+
+            temps[i] = sum;
+            fail_possibility += (sum - last_possibility) * round_prob[min(i - 2 + round, 18)];
+            temps2[i] = fail_possibility;
+            last_possibility = sum;
         }
+        for (int j = 1; j <= Hu_Automation::max_hu_value; ++j) {
+            fprintf(flog, "\n f[%d],",j);
+            for (int i = 1; i <= 13; ++i) {
+                fprintf(flog, "%llu,", f[p][34&1][i][j]);
+            }
+        }
+        fprintf(flog,"\n 0,");
+        for (int i = 1; i <= 16; ++i) {
+            fprintf(flog,"%lf,", temps[i]);
+        }
+        fprintf(flog,"\n 0,");
+        for (int i = 1; i <= 16; ++i) {
+            fprintf(flog,"%lf,", temps2[i]);
+        }
+        int num_cards_to_hu; for (num_cards_to_hu = 1; num_cards_to_hu <= 16 && temps[num_cards_to_hu] < 1e-10; ++num_cards_to_hu);
+
+        fprintf(flog,"%d, %lf\n",hand_choices[max(p - 1,0)],fail_possibility);
+        if (p > 0 && fail_possibility > best_expectance)best_card = hand_choices[p - 1], best_expectance = fail_possibility,close_to_hu=num_cards_to_hu;
     }
+    printf("exp:%lf, %lf, %d",best_expectance,best_expectance/round_prob[min(round, 17)],close_to_hu);
+    if(round > 6 && best_expectance/6/round_prob[min(round, 17)]<(close_to_hu > 3 ? 0.15 : (close_to_hu > 2 ? 0.12 : (close_to_hu == 2 ? 0.08 : 0)))){//play safe
+        int less = 5;
+        for (int i = 33; i>=0 ; --i) {
+            if (_hand_cnts[i] > 0 && known_remain_cnt[i]<less)less=known_remain_cnt[i],best_card=i;
+        }
+        printf("safe");
+    }
+    printf("\n");
     return best_card;
 }
 int main() {
@@ -177,7 +168,6 @@ int main() {
     int rest_num; fscanf(fin,"%d", &rest_num);
     int hand_cnt[35]; for (int i = 0; i < 34; ++ i) fscanf(fin, "%d", &hand_cnt[i]); hand_cnt[34]=0;
     int known_remain_cnt[34]; for (int i = 0; i < 34; ++ i) fscanf(fin,"%d", &known_remain_cnt[i]);
-    int dora[34]; for (int i = 0; i < 34; ++ i) fscanf(fin,"%d", &dora[i]);
     fclose(fin);
     fprintf(flog,"%d,\n", rest_num);
 
@@ -187,23 +177,16 @@ int main() {
     fprintf(flog, "\n");
     for (int i = 0; i < 34; ++ i) fprintf(flog,"%d, ", known_remain_cnt[i]);
     fprintf(flog, "\n");
-    for (int i = 0; i < 34; ++ i) fprintf(flog,"%d, ", dora[i]);
-    fprintf(flog, "\n");
     for (int i = 0; i < 34; ++i) {
-        for (int j = 0; j < hand_cnt[i]; ++j) {
-            fprintf(flog, "%3s, ", mname[i]);
-            printf("%3s, ", mname[i]);
-        }
+        for (int j = 0; j < hand_cnt[i]; ++j) fprintf(flog,"%3s, ", mname[i]);
     }
     fprintf(flog,"\n");
-    printf("\n");
 
     int round = 18 - rest_num / 4;//start with 69 -> 1.end with 0 - 18.
-    int choice = decide(hand_cnt, known_remain_cnt,dora,round);
+    int choice = decide(hand_cnt, known_remain_cnt,round);
     fprintf(fout,"%d",choice);
     fprintf(flog,"%d ,",choice);
     fprintf(flog, "%3s\n", mname[choice]);
-    printf("%3s\n", mname[choice]);
     fclose(fout);
     fclose(flog);
 
