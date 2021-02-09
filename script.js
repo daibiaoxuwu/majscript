@@ -305,6 +305,7 @@ if (game) {
 		  }, 10000);
 	  };
 	  var tmp2 = uiscript.UI_Lobby.prototype.onEnable;
+        /*
 	  uiscript.UI_Lobby.prototype.onEnable = function() {
 		  setTimeout(function() {
 			  uiscript.UI_Lobby.Inst.page0.btn_yibanchang.clickHandler.run();
@@ -318,7 +319,7 @@ if (game) {
 			  }, 2500);
 		  }, 3000);
 		  tmp2.apply(this, []);
-	  }
+	  }*/
 	  
 	  
     } catch (error) {
